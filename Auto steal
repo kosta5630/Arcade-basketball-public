@@ -7,36 +7,42 @@ local LocalPlayer = Players.LocalPlayer
 local StealEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Steal")
 local STEAL_RANGE = 5
 
--- Animation names to block
 local blockedAnims = {
     AnkleBreakerBack = true,
     AnkleBreakerLeft = true,
     AnkleBreakerRight = true,
 }
 
--- Toggle state
 local enabled = true
 
--- Toggle with R key
+-- To track last position and timer for closest ball holder
+local lastPos = nil
+local standStillTime = 0
+local targetPlayer = nil
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.R then
         enabled = not enabled
         print("Auto Steal + Anti-Ankle Breaker: " .. (enabled and "ON" or "OFF"))
+        -- Reset tracking when toggled off
+        if not enabled then
+            lastPos = nil
+            standStillTime = 0
+            targetPlayer = nil
+        end
     end
 end)
 
--- Main loop
-RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function(dt)
     if not enabled then return end
 
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChild("Humanoid") then return end
-
     local root = char.HumanoidRootPart
     local humanoid = char.Humanoid
 
-    -- 🛡️ Anti-Ankle Breaker
+    -- Anti-Ankle Breaker animations block
     for _, anim in pairs(char:GetDescendants()) do
         if anim:IsA("Animation") and blockedAnims[anim.Name] then
             anim:Destroy()
@@ -48,26 +54,56 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- 🏀 Auto Steal
+    -- Find closest player with ball within range
+    local closestDist = math.huge
+    local closestPlayer = nil
+    local closestHRP = nil
+
     for _, player in pairs(Players:GetPlayers()) do
-        if player == LocalPlayer then continue end
-        local enemyChar = player.Character
-        if not enemyChar or not enemyChar:FindFirstChild("HumanoidRootPart") then continue end
+        if player ~= LocalPlayer then
+            local enemyChar = player.Character
+            if enemyChar and enemyChar:FindFirstChild("HumanoidRootPart") then
+                local dist = (root.Position - enemyChar.HumanoidRootPart.Position).Magnitude
+                if dist <= STEAL_RANGE then
+                    local hasBall = enemyChar:FindFirstChild("Basketball") or enemyChar:FindFirstChildWhichIsA("Tool")
+                    if hasBall and dist < closestDist then
+                        closestDist = dist
+                        closestPlayer = player
+                        closestHRP = enemyChar.HumanoidRootPart
+                    end
+                end
+            end
+        end
+    end
 
-        local dist = (root.Position - enemyChar.HumanoidRootPart.Position).Magnitude
-        if dist > STEAL_RANGE then continue end
+    if closestPlayer and closestHRP then
+        -- Check if target changed; reset timer if yes
+        if targetPlayer ~= closestPlayer then
+            targetPlayer = closestPlayer
+            lastPos = closestHRP.Position
+            standStillTime = 0
+            return
+        end
 
-        local hasBall = enemyChar:FindFirstChild("Basketball") or enemyChar:FindFirstChildWhichIsA("Tool")
-        if not hasBall then continue end
+        -- Check if the player has stood still (position not changed much)
+        local delta = (closestHRP.Position - lastPos).Magnitude
+        if delta < 0.1 then
+            standStillTime = standStillTime + dt
+            if standStillTime >= 1 then
+                -- Steal event fired only once per stand still period
+                StealEvent:FireServer()
+                standStillTime = 0
+            end
+        else
+            -- Reset timer if moved
+            standStillTime = 0
+        end
 
-        local isDribbling =
-            (enemyChar:FindFirstChild("WaitingDribble") and enemyChar.WaitingDribble.Value == true) or
-            (enemyChar:FindFirstChild("DribbleChain") and enemyChar.DribbleChain.Value == true) or
-            (enemyChar:FindFirstChild("DribbleMoving") and enemyChar.DribbleMoving.Value == true)
-
-        if isDribbling then continue end
-
-        -- ✅ Steal safely
-        StealEvent:FireServer()
+        lastPos = closestHRP.Position
+    else
+        -- No valid target, reset
+        targetPlayer = nil
+        lastPos = nil
+        standStillTime = 0
     end
 end)
