@@ -8,9 +8,9 @@ local function FireInstantDoubleShot()
     -- First event
     ShootEvent:FireServer(true, 100, nil, false)
 
-    -- Wait 0.8s and then fire second event
-    task.delay(0.8, function()
-        ShootEvent:FireServer(false, -0.8915302181243896, true)
+    -- Wait 0.5s and then fire second event
+    task.delay(0.5, function()
+        ShootEvent:FireServer(false, -0.98, true)
     end)
 end
 
