@@ -1,0 +1,24 @@
+-- LocalScript
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
+
+-- Call this instead of firing manually
+local function FireInstantDoubleShot()
+    -- First event
+    ShootEvent:FireServer(true, 100, nil, false)
+
+    -- Wait 0.01s and then fire second event
+    task.delay(0.01, function()
+        ShootEvent:FireServer(false, -0.98, true)
+    end)
+end
+
+-- Bind to a key (E)
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.E then
+        FireInstantDoubleShot()
+    end
+end)
