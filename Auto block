@@ -20,7 +20,6 @@ RunService.RenderStepped:Connect(function()
         local dist = (root.Position - enemyChar.HumanoidRootPart.Position).Magnitude
         if dist > BLOCK_RANGE then continue end
 
-        -- 🧠 Check new Shooting value path
         local shootingFlag = player:FindFirstChild("Profile")
             and player.Profile:FindFirstChild("Mastery")
             and player.Profile.Mastery:FindFirstChild("Shooting")
