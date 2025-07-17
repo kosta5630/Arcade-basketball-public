@@ -1,0 +1,75 @@
+-- LocalScript in StarterPlayerScripts
+local Players = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+-- Gamepass IDs
+local Gamepasses = {
+    Clutch = 1324334466,
+    InfiniteBoost = 1304792934,
+    ["2XCoins"] = 1304298706,
+    ["2XXP"] = 1305938673,
+    ["2XMastery"] = 1312332500,
+    VIP = 1309453237,
+    Anonymous = 1306190731,
+}
+
+-- Hook gamepass checks
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local oldNamecall = mt.__namecall
+mt.__namecall = newcclosure(function(self, ...)
+	local args = { ... }
+	local method = getnamecallmethod()
+
+	if method == "UserOwnsGamePassAsync" and typeof(args[1]) == "number" and args[2] == LocalPlayer.UserId then
+		warn("Spoofed Gamepass Check:", args[1])
+		return true -- spoof ownership
+	end
+
+	return oldNamecall(self, unpack(args))
+end)
+
+-- Manual Perks (run client-side only, for visible effects)
+local function applyFakePerks()
+	-- Infinite Boost example
+	if Character:FindFirstChild("Boost") then
+		Character.Boost.Value = math.huge
+	end
+
+	-- 2X Coins, XP, Mastery - if handled by client GUI or scripts
+	if LocalPlayer:FindFirstChild("leaderstats") then
+		local ls = LocalPlayer.leaderstats
+		if ls:FindFirstChild("Coins") then
+			ls.Coins.Value = ls.Coins.Value * 2
+		end
+		if ls:FindFirstChild("XP") then
+			ls.XP.Value = ls.XP.Value * 2
+		end
+	end
+
+	-- VIP effect (could be a tag or GUI)
+	if not LocalPlayer:FindFirstChild("VIPTag") then
+		local vip = Instance.new("BoolValue", LocalPlayer)
+		vip.Name = "VIPTag"
+	end
+
+	-- Anonymous mode - hide your name locally
+	local head = Character:FindFirstChild("Head")
+	if head and head:FindFirstChild("NameTag") then
+		head.NameTag.Enabled = false
+	end
+end
+
+-- Wait for character to load
+LocalPlayer.CharacterAdded:Connect(function(char)
+	Character = char
+	task.wait(1)
+	applyFakePerks()
+end)
+
+-- Initial apply
+applyFakePerks()
