@@ -1,1 +1,30 @@
+-- LocalScript
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Events = ReplicatedStorage:WaitForChild("Events")
+local ShootEvent = Events:WaitForChild("Shoot")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Hook into RemoteEvent using namecall metamethod
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+
+    if self == ShootEvent and method == "FireServer" and checkcaller() then
+        if args[1] == true and args[2] == 100 and args[4] == false then
+            -- First event detected
+            task.delay(0.8, function()
+                local secondArgs = {
+                    false,
+                    -0.8915302181243896,
+                    true
+                }
+                ShootEvent:FireServer(unpack(secondArgs))
+            end)
+        end
+    end
+
+    return oldNamecall(self, ...)
+end)
