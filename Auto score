@@ -1,0 +1,49 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local positions = {
+    Vector3.new(-55.56033706665039, 30.640226364135742, -203.79429626464844),
+    Vector3.new(-222.3426055908203, 30.687803268432617, -8.631543159484863),
+    Vector3.new(-222.6011199951172, 30.670377731323242, -203.52236938476562),
+    Vector3.new(-89.34137725830078, 76.12374877929688, -16.891239166259766)
+}
+
+local function getClosestPosition()
+    local closestPos = nil
+    local shortestDist = math.huge
+
+    for _, pos in ipairs(positions) do
+        local dist = (hrp.Position - pos).Magnitude
+        if dist < shortestDist then
+            shortestDist = dist
+            closestPos = pos
+        end
+    end
+
+    return closestPos
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.T then
+        -- Teleport to closest position
+        local closest = getClosestPosition()
+        if closest then
+            hrp.CFrame = CFrame.new(closest)
+
+            -- Fire first event
+            task.wait(0.05) -- small wait to ensure the teleport registers
+            ShootEvent:FireServer(true, 100, nil, false)
+
+            -- Wait and fire second event
+            task.wait(0.2)
+            ShootEvent:FireServer(false, -0.98, true)
+        end
+    end
+end)
