@@ -1,0 +1,27 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local BlockEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Block")
+local BLOCK_RANGE = 5
+
+RunService.RenderStepped:Connect(function()
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local root = char.HumanoidRootPart
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+        local enemyChar = player.Character
+        if not enemyChar or not enemyChar:FindFirstChild("HumanoidRootPart") then continue end
+
+        local dist = (root.Position - enemyChar.HumanoidRootPart.Position).Magnitude
+        if dist > BLOCK_RANGE then continue end
+
+        local shootingFlag = enemyChar:FindFirstChild("Shooting")
+        if shootingFlag and shootingFlag.Value == true then
+            BlockEvent:FireServer()
+        end
+    end
+end)
