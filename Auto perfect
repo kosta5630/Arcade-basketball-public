@@ -1,30 +1,24 @@
--- LocalScript (Exploit Required)
+-- LocalScript
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
 
--- Protect against infinite recursion
-local processing = false
+-- Call this instead of firing manually
+local function FireInstantDoubleShot()
+    -- First event
+    ShootEvent:FireServer(true, 100, nil, false)
 
--- Hook the __namecall metamethod
-local oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
+    -- Wait 0.8s and then fire second event
+    task.delay(0.8, function()
+        ShootEvent:FireServer(false, -0.8915302181243896, true)
+    end)
+end
 
-    -- Make sure we're only hooking the local player's calls to Shoot:FireServer
-    if not processing and self == ShootEvent and method == "FireServer" and checkcaller() then
-        -- Check if it's the first event being fired
-        if args[1] == true and args[2] == 100 and args[4] == false then
-            -- Prevent recursive triggering
-            processing = true
-            task.delay(0.8, function()
-                -- Safely fire the second event
-                ShootEvent:FireServer(false, -0.8915302181243896, true)
-                processing = false
-            end)
-        end
+-- Bind to a key (E)
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.E then
+        FireInstantDoubleShot()
     end
-
-    -- Continue with original behavior
-    return oldNamecall(self, ...)
 end)
