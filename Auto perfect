@@ -1,16 +1,58 @@
--- LocalScript
+-- Auto Perfect toggle script (toggle on/off each time it's run)
+
+if getgenv().AutoPerfectToggle then
+    -- Disable if already enabled
+    for _, conn in pairs(getgenv().AutoPerfectConnections or {}) do
+        pcall(function() conn:Disconnect() end)
+    end
+    getgenv().AutoPerfectConnections = nil
+
+    -- Re-enable original shoot button scripts
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    local shootButton = playerGui:WaitForChild("Mobile"):WaitForChild("Offense"):WaitForChild("Shoot")
+
+    for _, v in pairs(shootButton:GetDescendants()) do
+        if v:IsA("Script") or v:IsA("LocalScript") then
+            v.Disabled = false
+        end
+    end
+
+    getgenv().AutoPerfectToggle = false
+    warn("Auto Perfect: Disabled")
+    return
+end
+
+getgenv().AutoPerfectToggle = true
 
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
 
--- Get the local player
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local shootButton = playerGui:WaitForChild("Mobile"):WaitForChild("Offense"):WaitForChild("Shoot")
+local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
 
--- Fire instant double shot
+-- Disable all scripts in shootButton
+for _, v in pairs(shootButton:GetDescendants()) do
+    if v:IsA("Script") or v:IsA("LocalScript") then
+        v.Disabled = true
+    end
+end
+
+-- Disconnect all existing events on shootButton
+local function disconnectAllEvents(obj)
+    for _, conn in pairs(getconnections(obj.MouseButton1Click)) do
+        conn:Disconnect()
+    end
+    for _, conn in pairs(getconnections(obj.Activated)) do
+        conn:Disconnect()
+    end
+end
+pcall(disconnectAllEvents, shootButton)
+
 local function FireInstantDoubleShot()
     ShootEvent:FireServer(true, 100, nil, false)
     task.delay(0.5, function()
@@ -18,43 +60,17 @@ local function FireInstantDoubleShot()
     end)
 end
 
--- Disable any existing scripts in the Shoot button
-for _, v in pairs(shootButton:GetDescendants()) do
-    if v:IsA("Script") or v:IsA("LocalScript") then
-        v.Disabled = true
-    end
-end
+getgenv().AutoPerfectConnections = {}
 
--- Disconnect all existing events from the Shoot button
-local function disconnectAllEvents(object)
-    for _, conn in pairs(getconnections(object.MouseButton1Click)) do
-        conn:Disconnect()
-    end
-    for _, conn in pairs(getconnections(object.Activated)) do
-        conn:Disconnect()
-    end
-end
+-- Hook MouseButton1Down
+table.insert(getgenv().AutoPerfectConnections, shootButton.MouseButton1Down:Connect(FireInstantDoubleShot))
 
-pcall(disconnectAllEvents, shootButton)
-
--- Hook button input
-local isHolding = false
-
-shootButton.MouseButton1Down:Connect(function()
-    isHolding = true
-    FireInstantDoubleShot()
-end)
-
-shootButton.MouseButton1Up:Connect(function()
-    isHolding = false
-end)
-
--- Trigger via keyboard or gamepad
-UserInputService.InputBegan:Connect(function(input, processed)
+-- Hook keyboard/gamepad input
+table.insert(getgenv().AutoPerfectConnections, UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.E 
-        or input.KeyCode == Enum.KeyCode.ButtonX 
-        or input.KeyCode == Enum.KeyCode.ButtonSquare then
+    if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.ButtonX or input.KeyCode == Enum.KeyCode.ButtonSquare then
         FireInstantDoubleShot()
     end
-end)
+end))
+
+warn("Auto Perfect: Enabled")
