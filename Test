@@ -1,0 +1,63 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local ShootEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
+
+-- Wait until GUI is fully loaded
+local gui = player:WaitForChild("PlayerGui"):WaitForChild("Offense")
+local button = gui:WaitForChild("Shoot")
+
+-- Your custom fire function
+local function FireInstantDoubleShot()
+    ShootEvent:FireServer(true, 100, nil, false)
+    task.delay(0.5, function()
+        ShootEvent:FireServer(false, -0.98, true)
+    end)
+end
+
+-- Repeatedly destroy all event connections and scripts
+task.spawn(function()
+    while true do
+        -- Destroy scripts in Offense GUI
+        for _, obj in ipairs(gui:GetDescendants()) do
+            if obj:IsA("LocalScript") or obj:IsA("Script") then
+                obj:Destroy()
+            end
+        end
+
+        -- Disconnect all known event signals
+        if getconnections then
+            for _, signalName in ipairs({
+                "MouseButton1Click",
+                "MouseButton1Down",
+                "MouseButton1Up",
+                "Activated",
+                "TouchTap"
+            }) do
+                local signal = button[signalName]
+                if signal then
+                    local success, connections = pcall(getconnections, signal)
+                    if success then
+                        for _, conn in ipairs(connections) do
+                            conn:Disable()
+                        end
+                    end
+                end
+            end
+        end
+
+        task.wait(0.1)
+    end
+end)
+
+-- Only trigger your custom shoot when clicked or held
+button.MouseButton1Down:Connect(FireInstantDoubleShot)
+
+-- Optional: also fire with E key
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.E then
+        FireInstantDoubleShot()
+    end
+end)
