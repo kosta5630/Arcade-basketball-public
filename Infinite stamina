@@ -1,0 +1,13 @@
+local player = game.Players.LocalPlayer
+local profile = player:WaitForChild("Profile")
+
+local stamina = profile:WaitForChild("Stamina")
+local maxStamina = profile:WaitForChild("MaxStamina")
+
+-- Set stamina to max and prevent it from decreasing
+stamina:GetPropertyChangedSignal("Value"):Connect(function()
+    stamina.Value = maxStamina.Value
+end)
+
+-- Initial set
+stamina.Value = maxStamina.Value
