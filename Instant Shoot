@@ -47,10 +47,12 @@ shootButton.MouseButton1Up:Connect(function()
     isHolding = false
 end)
 
--- Optional: Trigger via keyboard
+-- Trigger via keyboard or controller
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.E then
+    if input.KeyCode == Enum.KeyCode.E or
+       input.KeyCode == Enum.KeyCode.ButtonX or
+       input.KeyCode == Enum.KeyCode.ButtonSquare then
         FireInstantDoubleShot()
     end
 end)
