@@ -42,10 +42,9 @@ local MainSection = OffenseTab:CreateSection("Main") -- Changed 'Tab' to 'MainTa
 local Toggle = OffenseTab:CreateToggle({
     Name = "Auto Perfect",
     CurrentValue = false,
-    Flag = " ",
+    Flag = "AutoPerfectToggle",
     Callback = function(Value)
-        if Value then
-             end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20perfect"))()
     end,
 })
  
