@@ -49,4 +49,50 @@ local Toggle = OffenseTab:CreateToggle({
           end
     end,
 })
- 
+
+local Toggle = OffenseTab:CreateToggle({
+    Name = "Instant Shoot",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Instant%20Shoot"))()
+        end
+    end,
+})
+
+local Toggle = OffenseTab:CreateToggle({
+    Name = "Auto Score (T)",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20score"))()
+        end
+    end,
+})
+
+local DefenseTab = Window:CreateTab("Defense", nil) -- Title, Image
+local SecsSection = DefenseTab:CreateSection("Secs") -- Changed 'Tab' to 'MainTab'
+
+local Toggle = DefenseTab:CreateToggle({
+    Name = "Auto Guard",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20score"))()
+        end
+    end,
+})
+
+local Toggle = DefenseTab:CreateToggle({
+    Name = "Auto Steal (R)",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20score"))()
+        end
+    end,
+})
