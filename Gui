@@ -81,7 +81,7 @@ local Toggle = DefenseTab:CreateToggle({
     Flag = "AT_Toggle",
     Callback = function(Value)
         if Value then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20score"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20guard"))()
         end
     end,
 })
@@ -92,7 +92,43 @@ local Toggle = DefenseTab:CreateToggle({
     Flag = "AT_Toggle",
     Callback = function(Value)
         if Value then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20score"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20steal"))()
+        end
+    end,
+})
+
+local PhysicTab = Window:CreateTab("Physic", nil) -- Title, Image
+local TresSection = PhysicTab:CreateSection("Tres") -- Changed 'Tab' to 'MainTab'
+
+local Toggle = PhysicTab:CreateToggle({
+    Name = "Infinite Stamins",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Infinite%20stamina"))()
+         end
+    end,
+})
+
+local Toggle = PhysicTab:CreateToggle({
+    Name = "Auto Sprint",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/kosta5630/Arcade-basketball-public/refs/heads/main/Auto%20sprint"))()
+         end
+    end,
+})
+
+local Toggle = PhysicTab:CreateToggle({
+    Name = "Keyboard",
+    CurrentValue = false,
+    Flag = "AT_Toggle",
+    Callback = function(Value)
+        if Value then
+            loadstring(game:HttpGet("https://gist.githubusercontent.com/RedZenXYZ/4d80bfd70ee27000660e4bfa7509c667/raw/da903c570249ab3c0c1a74f3467260972c3d87e6/KeyBoard%2520From%2520Ohio%2520Fr%2520Fr"))()
         end
     end,
 })
