@@ -1,13 +1,33 @@
-local player = game.Players.LocalPlayer
-local profile = player:WaitForChild("Profile")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SprintEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Sprint")
 
-local stamina = profile:WaitForChild("Stamina")
-local maxStamina = profile:WaitForChild("MaxStamina")
+getgenv().SprintBlockEnabled = not getgenv().SprintBlockEnabled
 
--- Set stamina to max and prevent it from decreasing
-stamina:GetPropertyChangedSignal("Value"):Connect(function()
-    stamina.Value = maxStamina.Value
-end)
+if getgenv().SprintBlockEnabled then
+    SprintEvent:FireServer("Mobile")
 
--- Initial set
-stamina.Value = maxStamina.Value
+    local mt = getrawmetatable(game)
+    setreadonly(mt, false)
+
+    if not getgenv().OriginalNamecall then
+        getgenv().OriginalNamecall = mt.__namecall
+    end
+
+    mt.__namecall = function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+
+        if getgenv().SprintBlockEnabled and method == "FireServer" and self == SprintEvent and args[1] == false then
+            return nil
+        end
+
+        return getgenv().OriginalNamecall(self, ...)
+    end
+else
+    -- Restore the original __namecall if disabling
+    local mt = getrawmetatable(game)
+    setreadonly(mt, false)
+    if getgenv().OriginalNamecall then
+        mt.__namecall = getgenv().OriginalNamecall
+    end
+end
