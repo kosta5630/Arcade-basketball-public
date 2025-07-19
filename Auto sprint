@@ -1,0 +1,13 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SprintEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Sprint")
+
+getgenv().SprintEnabled = not getgenv().SprintEnabled
+
+if getgenv().SprintEnabled then
+    task.spawn(function()
+        while getgenv().SprintEnabled do
+            SprintEvent:FireServer("Mobile")
+            task.wait(2)
+        end
+    end)
+end
